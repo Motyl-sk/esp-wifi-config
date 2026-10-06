@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP WiFi Konfigurácia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status-box {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .status-box.error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        
+        .status-box.success {
+            border-left-color: #4caf50;
+            background: #e8f5e9;
+        }
+        
+        .status-box.info {
+            border-left-color: #2196f3;
+            background: #e3f2fd;
+        }
+        
+        .device-info {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .device-info label {
+            display: block;
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .device-info .value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+            word-break: break-all;
+        }
+        
+        .network-list {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .network-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        
+        .network-item:last-child {
+            border-bottom: none;
+        }
+        
+        .network-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .network-item input[type="radio"] {
+            margin-right: 12px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .network-item .ssid {
+            flex: 1;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .network-item .signal {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .loading-text {
+            color: #666;
+            font-size: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .success-message {
+            text-align: center;
+            color: #4caf50;
+        }
+        
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 ESP WiFi Konfigurácia</h1>
+        <p class="subtitle">Nastavenie WiFi siete pomocou Bluetooth LE</p>
+        
+        <!-- Scan Section -->
+        <div id="scanSection" class="section">
+            <div class="section-title">Krok 1: Vyhľadávanie zariadenia</div>
+            <button class="button" id="scanButton" onclick="startScan()">Vyhľadať BLE zariadenie</button>
+            <div id="scanStatus" class="status-box hidden"></div>
+        </div>
+        
+        <!-- Connection Section -->
+        <div id="connectionSection" class="section hidden">
+            <div class="section-title">Krok 2: Pripojenie</div>
+            <button class="button" id="connectButton" onclick="connectToDevice()">Pripojiť sa</button>
+            <div id="connectionStatus" class="status-box hidden"></div>
+        </div>
+        
+        <!-- Connected Section -->
+        <div id="connectedSection" class="section hidden">
+            <div class="device-info">
+                <label>Pripojené zariadenie</label>
+                <div class="value" id="deviceName">-</div>
+            </div>
+            
+            <div class="section-title">Dostupné WiFi siete</div>
+            <div class="loading-text" id="loadingNetworks">
+                <span class="spinner"></span> Načítavanie sietí...
+            </div>
+            <div class="network-list" id="networkList"></div>
+            
+            <div class="input-group">
+                <label for="passwordInput">Heslo k sieti</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="password" id="passwordInput" placeholder="Zadajte heslo" style="flex: 1; min-width: 0;">
+                    <label for="showPasswordCheckbox" style="display: flex; align-items: center; gap: 4px; margin: 0; cursor: pointer; font-size: 13px; white-space: nowrap; flex-shrink: 0;">
+                        <input type="checkbox" id="showPasswordCheckbox" onchange="togglePasswordVisibility()" style="margin: 0; cursor: pointer;">
+                        Ukázať
+                    </label>
+                </div>
+            </div>
+            
+            <button class="button" id="saveButton" onclick="saveWiFiConfig()">Uložiť konfiguráciu</button>
+            <div id="saveStatus" class="status-box hidden"></div>
+            
+            <button class="button" style="background: #f44336; margin-top: 10px;" onclick="disconnect()">Odpojit sa</button>
+        </div>
+        
+        <!-- Success Section -->
+        <div id="successSection" class="section hidden">
+            <div class="status-box success">
+                <div class="success-message">
+                    <div class="success-icon">✓</div>
+                    <strong>Konfigurácia bola úspešne uložená!</strong>
+                    <p style="margin-top: 8px; font-size: 13px;">Zariadenie sa automaticky reštartuje a pripojí sa k WiFi sieti.</p>
+                </div>
+            </div>
+            <button class="button" onclick="location.reload()">Novú konfiguráciu</button>
+        </div>
+    </div>
+
+    <script>
+        const SERVICE_UUID = '12345678-1234-1234-1234-123456789012'; // Rovnaká UUID ako v ESP
+        const CHAR_NETWORKS_UUID = 'a1a2a3a4-b1b2-c1c2-d1d2-e1e2e3e4e5e6';
+        const CHAR_CONFIG_UUID = 'b2b3b4b5-c2c3-d2d3-e2e3-f2f3f4f5f6f7';
+        
+        let device = null;
+        let server = null;
+        let service = null;
+        
+        async function startScan() {
+            const scanButton = document.getElementById('scanButton');
+            const scanStatus = document.getElementById('scanStatus');
+            scanButton.disabled = true;
+            
+            try {
+                showStatus(scanStatus, '<span class="spinner"></span> Hľadám BLE zariadenie...', 'info');
+                
+                const options = {
+                    filters: [{ services: [SERVICE_UUID] }],
+                    optionalServices: [SERVICE_UUID]
+                };
+                
+                device = await navigator.bluetooth.requestDevice(options);
+                
+                showStatus(scanStatus, `✓ Zariadenie nájdené: ${device.name}`, 'success');
+                
+                document.getElementById('scanSection').style.display = 'block';
+                document.getElementById('connectionSection').classList.remove('hidden');
+                document.getElementById('connectedSection').classList.add('hidden');
+                
+            } catch (error) {
+                if (error.name !== 'NotFoundError') {
+                    showStatus(scanStatus, `✗ Chyba: ${error.message}`, 'error');
+                    console.error(error);
+                }
+                scanButton.disabled = false;
+            }
+        }
+        
+        async function connectToDevice() {
+            const connectButton = document.getElementById('connectButton');
+            const connectionStatus = document.getElementById('connectionStatus');
+            connectButton.disabled = true;
+            
+            try {
+                showStatus(connectionStatus, '<span class="spinner"></span> Pripájam sa...', 'info');
+                
+                server = await device.gatt.connect();
+                service = await server.getPrimaryService(SERVICE_UUID);
+                
+                const deviceName = device.name || 'Neznáme zariadenie';
+                document.getElementById('deviceName').textContent = deviceName;
+                
+                showStatus(connectionStatus, '✓ Úspešne pripojené!', 'success');
+                
+                document.getElementById('connectionSection').style.display = 'block';
+                document.getElementById('connectedSection').classList.remove('hidden');
+                document.getElementById('scanSection').style.display = 'none';
+                
+                await loadNetworks();
+                
+            } catch (error) {
+                showStatus(connectionStatus, `✗ Chyba pripojenia: ${error.message}`, 'error');
+                console.error(error);
+                connectButton.disabled = false;
+            }
+        }
+        
+        async function loadNetworks() {
+            try {
+                const networksChar = await service.getCharacteristic(CHAR_NETWORKS_UUID);
+                const value = await networksChar.readValue();
+                const text = new TextDecoder().decode(value);
+                
+                const networks = text.split('\n').filter(n => n.trim());
+                const networkList = document.getElementById('networkList');
+                networkList.innerHTML = '';
+                
+                document.getElementById('loadingNetworks').classList.add('hidden');
+                
+                if (networks.length === 0) {
+                    networkList.innerHTML = '<div class="loading-text">Žiadne siete nenájdené</div>';
+                    return;
+                }
+                
+                networks.forEach((network, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'network-item';
+                    const [ssid, signal] = network.split('|');
+                    
+                    item.innerHTML = `
+                        <input type="radio" name="network" value="${ssid}" id="network_${index}">
+                        <label for="network_${index}" style="flex: 1; cursor: pointer; margin: 0;">
+                            <span class="ssid">${ssid}</span>
+                        </label>
+                        <span class="signal">${signal || 'N/A'}</span>
+                    `;
+                    networkList.appendChild(item);
+                });
+                
+                if (networks.length > 0) {
+                    document.getElementById(`network_0`).checked = true;
+                }
+                
+            } catch (error) {
+                console.error('Chyba pri načítavaní sietí:', error);
+                const networkList = document.getElementById('networkList');
+                networkList.innerHTML = '<div class="loading-text">Chyba pri načítavaní sietí</div>';
+            }
+        }
+        
+        async function saveWiFiConfig() {
+            const saveButton = document.getElementById('saveButton');
+            const saveStatus = document.getElementById('saveStatus');
+            const selectedNetwork = document.querySelector('input[name="network"]:checked');
+            const password = document.getElementById('passwordInput').value;
+            
+            if (!selectedNetwork) {
+                showStatus(saveStatus, '✗ Prosím vyberte WiFi sieť', 'error');
+                return;
+            }
+            
+            if (!password) {
+                showStatus(saveStatus, '✗ Prosím zadajte heslo', 'error');
+                return;
+            }
+            
+            saveButton.disabled = true;
+            
+            try {
+                showStatus(saveStatus, '<span class="spinner"></span> Ukladám konfiguráciu...', 'info');
+                console.log('Vybratá sieť:', selectedNetwork.value);
+                console.log('Heslo:', password);
+                
+                const configChar = await service.getCharacteristic(CHAR_CONFIG_UUID);
+                const configData = `${selectedNetwork.value}|${password}`;
+                const encoder = new TextEncoder();
+                const encodedData = encoder.encode(configData);
+                
+                console.log('Posielam data:', configData);
+                console.log('Počet bajtov:', encodedData.length);
+                
+                await configChar.writeValue(encodedData);
+                
+                console.log('Data úspešne poslané!');
+                showStatus(saveStatus, '✓ Konfigurácia uložená!', 'success');
+                
+                document.getElementById('connectedSection').classList.add('hidden');
+                document.getElementById('successSection').classList.remove('hidden');
+                
+                // Dlhšie čakanie na obchodovanie ESP
+                setTimeout(() => {
+                    console.log('Odpájam sa...');
+                    device.gatt.disconnect();
+                }, 3000);
+                
+            } catch (error) {
+                showStatus(saveStatus, `✗ Chyba pri ukladaní: ${error.message}`, 'error');
+                console.error('Chyba pri posielaní:', error);
+                saveButton.disabled = false;
+            }
+        }
+        
+        function disconnect() {
+            if (device) {
+                device.gatt.disconnect();
+                location.reload();
+            }
+        }
+        
+        function showStatus(element, message, type) {
+            element.innerHTML = message;
+            element.classList.remove('hidden', 'error', 'success', 'info');
+            element.classList.add(type);
+        }
+        
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('passwordInput');
+            const showPasswordCheckbox = document.getElementById('showPasswordCheckbox');
+            
+            if (showPasswordCheckbox.checked) {
+                passwordInput.type = 'text';
+            } else {
+                passwordInput.type = 'password';
+            }
+        }
+    </script>
+</body>
+</html>
